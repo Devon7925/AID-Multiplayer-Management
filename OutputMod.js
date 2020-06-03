@@ -3,20 +3,23 @@
 // https://github.com/AIDungeon/Scripting/blob/master/examples
 
 const modifier = (text) => {
-  
-    let modifiedText = ""
-    
-    for(sentence of text.split(".")){
-        let lower = sentence.toLowerCase()
-        if(!(lower.includes("you")||lower.includes("your")) && /\S/.test(lower)){
-            modifiedText += sentence + "."
-        }
+
+  let modifiedText = ""
+
+  if (state.disableOut) {
+    state.disableOut = false
+  } else {
+    for (sentence of text.split(".")) {
+      let lower = sentence.toLowerCase()
+      if (!(lower.includes("you") || lower.includes("your")) && /\S/.test(lower)) {
+        modifiedText += sentence + "."
+      }
     }
-    
-    // You must return an object with the text property defined. 
-    return {text: modifiedText}
   }
-  
-  // Don't modify this part
-  modifier(text)
-  
+
+  // You must return an object with the text property defined. 
+  return { text: modifiedText }
+}
+
+// Don't modify this part
+modifier(text)

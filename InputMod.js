@@ -3,14 +3,22 @@
 // https://github.com/AIDungeon/Scripting/blob/master/examples
 
 const modifier = (text) => {
-  
-    let modifiedText = text
-    const lowered = text.toLowerCase()
-    
-    // You must return an object with the text property defined. 
-    return {text: modifiedText}
+
+  if (!state.initialized) {
+    state.step = 0
+    state.initialized = true
   }
-  
-  // Don't modify this part
-  modifier(text)
-  
+  let modifiedText = ""
+  const lowered = text.toLowerCase()
+  if (/[\s\n]+>/.test(text) || state.step <= 0) {
+    modifiedText = text
+  } else {
+    state.disableOut = true
+  }
+  state.step++
+  // You must return an object with the text property defined. 
+  return { text: modifiedText }
+}
+
+// Don't modify this part
+modifier(text)
