@@ -2,6 +2,7 @@
 A system to manage multiplayer scenarios for AI dungeon
 
 ## Installation 
+Paste the code into the scripting page found at the bottom of the scenario form in AI Dungeon 2.
 
 ## Usage
 
