@@ -10,7 +10,22 @@ const modifier = (text) => {
 	if (state.disableOut) {
 		state.disableOut = false
 	} else { 
-		for (sentence of text.split(".")) {
+		
+		let dialog = false
+		let preparedText = ""
+		for (quote of text.split("\"")) {
+			if (dialog) {
+				quote = quote.replace(/\./g, "¤")
+			}
+			preparedText += quote + "\""
+			dialog = !dialog
+		}
+		
+		if (dialog) {
+			preparedText = preparedText.slice(0, -1);
+		}
+		
+		for (sentence of preparedText.split(".")) {
 			let lower = sentence.toLowerCase()
 			let dialog = false
 			for (quote of lower.split("\"")) {
@@ -33,8 +48,10 @@ const modifier = (text) => {
 			}
 			if (!containsYou && /\S/.test(lower)) {
 				modifiedText += sentence + "."
+				modifiedText = modifiedText.replace(/¤/g, ".")
 			}
-		}
+		} 
+		
 	}
 
   // You must return an object with the text property defined. 
