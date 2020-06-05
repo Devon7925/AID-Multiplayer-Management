@@ -37,12 +37,13 @@ const modifier = (text) => {
       state.message += argSet[0] + " is " + (state.rules.get(argSet[0])?"enabled":"disabled")
     }else{
       if(argSet[1] === "enable") state.rules.set(argSet[0], true)
-      if(argSet[1] === "disable") state.rules.set(argSet[0], false)
+      else if(argSet[1] === "disable") state.rules.set(argSet[0], false)
+      else state.message += "could not understand command"
     }
   }
 
   const statePrint = function(args) {
-    state.message += JSON.stringify(state)
+    state.message += state.rules.get("usePin")?JSON.stringify(state):"usePin is required to get state"
   }
   
   let commands = new MyMap()
@@ -51,10 +52,12 @@ const modifier = (text) => {
 
   if (!state.initialized) {
     state.step = 0
+    state.turn = 0
     state.initialized = true
     state.players = []
     state.rules = new MyMap()
     state.rules.set("usePin", false)
+    state.rules.set("useTurns", false)
   }
   
   state.rules = MyMap.copy(state.rules)
@@ -97,13 +100,23 @@ const modifier = (text) => {
           useText = false
         }
       }
+      if(state.rules.get("useTurns") && state.players.length > 0){
+        if(charName !== state.players[state.turn]) {
+          useText = false
+        }
+      }
     }
     if(useText) modifiedText = text
     else state.disableOut = true
   } else {
     state.disableOut = true
   }
-  
+  if(!state.disableOut && state.rules.get("useTurns")){
+    if(state.players.length > 0){
+      state.turn++
+      state.turn = state.turn % state.players.length
+    }
+  }
   state.step++
   // You must return an object with the text property defined.
   return { text: modifiedText }
