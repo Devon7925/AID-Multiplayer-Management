@@ -46,18 +46,46 @@ const modifier = (text) => {
     state.message += state.rules.get("usePin")?JSON.stringify(state):"usePin is required to get state"
   }
   
+  const ban = function(args) {
+    getPlayer(args)[2] = !getPlayer(args)[2]
+  }
+    
+  const op = function(args) {
+    getPlayer(args)[1] = !getPlayer(args)[1]
+  }
+  
   let commands = new MyMap()
   commands.set('rule', rule)
   commands.set('state', statePrint)
+  commands.set('ban', ban)
+  commands.set('op', op)
 
   if (!state.initialized) {
     state.step = 0
     state.turn = 0
     state.initialized = true
-    state.players = []
+    state.players = []//format is array of arrays ["name", bool hasPerms, bool banned]
     state.rules = new MyMap()
     state.rules.set("usePin", false)
     state.rules.set("useTurns", false)
+  }
+  
+  const playersIncludes = function(playerName){
+    for(player of state.players){
+      if(player[0] === playerName){
+        return true
+      }
+    }
+    return false
+  }
+  
+  const getPlayer = function(playerName){
+    for(player of state.players){
+      if(player[0] === playerName){
+        return player
+      }
+    }
+    return null
   }
   
   state.rules = MyMap.copy(state.rules)
@@ -76,11 +104,11 @@ const modifier = (text) => {
     let useText = true
     if(state.step > 0){
       let charName = text.replace(/^[\s\n]*>\s/, "").match(/\w+\s/)[0].replace(/\s+/,"")
-      if(!state.players.includes(charName)){
-        state.players.push(charName)
+      if(!playersIncludes(charName)){
+        state.players.push([charName,state.players.length == 0,false])
         state.message += charName + " has Joined the Game"
       }
-      if(charName === state.players[0]){
+      if(getPlayer(charName)[1]){
         let allowed = true
         if(state.rules.get("usePin")){
           if(Number(text.match(/\d+/)[0]) === state.pin){
@@ -101,7 +129,7 @@ const modifier = (text) => {
         }
       }
       if(state.rules.get("useTurns") && state.players.length > 0){
-        if(charName !== state.players[state.turn]) {
+        if(charName !== state.players[state.turn][0]) {
           useText = false
         }
       }
@@ -115,6 +143,11 @@ const modifier = (text) => {
     if(state.players.length > 0){
       state.turn++
       state.turn = state.turn % state.players.length
+      while(state.players[state.turn][2]){
+        state.turn++
+        state.turn = state.turn % state.players.length
+      }
+      state.message += "It is now " + state.players[state.turn][0] + "'s turn"
     }
   }
   state.step++
