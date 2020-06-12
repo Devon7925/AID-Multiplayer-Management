@@ -10,12 +10,16 @@ Syntax:
 
 -rule ruleName [enable/disable]
 
-The rules are useTurns and usePin. Both are disabled by default.
+The rules are described below)
 
-useTurns enforces turn order when enabled
+useTurns enforces turn order when enabled (Default: disabled)
 
 usePin requires that commands be prefixed by the pin when enabled.
-This can be used to stop impersonation.
+This can be used to stop impersonation. (Default: disabled)
+
+disableYou prevents the AI from generating text including mentions of you when enabled (Default: enabled)
+
+disableStory prevents players from using story mode when enabled  (Default: disabled)
 ### Ban
 Syntax:
 

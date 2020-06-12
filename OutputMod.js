@@ -3,59 +3,48 @@
 // https://github.com/AIDungeon/Scripting/blob/master/examples
 
 const modifier = (text) => {
-
-	let modifiedText = ""
-	let shapesOfYou = ["you", "your", "yourself", "you're", "you'll", "you'd"]
-	let punctuation = [" ", ".", ",", "!", "?", ":", ";", "'", "\""]
-	if (state.disableOut) {
-		state.disableOut = false
-	} else { 
-		
-		let dialog = false
-		let preparedText = ""
-		for (quote of text.split("\"")) {
-			if (dialog) {
-				quote = quote.replace(/\./g, "¤")
-			}
-			preparedText += quote + "\""
-			dialog = !dialog
-		}
-		
-		if (dialog) {
-			preparedText = preparedText.slice(0, -1);
-		}
-		
-		for (sentence of preparedText.split(".")) {
-			let lower = sentence.toLowerCase()
-			let dialog = false
-			for (quote of lower.split("\"")) {
-				if (dialog) {
-					lower = lower.replace(quote, "")
-				}
-				dialog = !dialog
-			}
-			let containsYou = false
-			for (youShape of shapesOfYou) {
-				if (lower.endsWith(youShape)) {
-					containsYou = true
-				} else {
-					for (symbol of punctuation) {
-						if (lower.includes(" "+youShape+symbol)) {
-							containsYou = true
-						}
-					}
-				}
-			}
-			if (!containsYou && /\S/.test(lower)) {
-				modifiedText += sentence + "."
-				modifiedText = modifiedText.replace(/¤/g, ".")
-			}
-		} 
-		
+	function escapeRegex(string) {
+		return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 	}
 
-  // You must return an object with the text property defined. 
-  return { text: modifiedText }
+	let modifiedText = ""
+	const shapesOfYou = ["you", "your", "yourself", "you're", "you'll", "you'd"]
+	const punctuation = [".", ",", "!", "?", ":", ";"]
+	const puncRegex = new RegExp("[" + escapeRegex(punctuation.join("")) + "]")
+	const extPunctuation = [" ", ".", ",", "!", "?", ":", ";", "'", "\""]
+	const extPuncRegex = new RegExp("[" + escapeRegex(extPunctuation.join("")) + "]")
+	if (state.disableOut) {
+		state.disableOut = false
+	} else if (state.rules.get("disableYou")) {
+		text = ". " + text
+		let dialog = false
+		let containsYou = false
+		let index = 0
+		let wordIndex = 0
+		let sentenceIndex = 0
+		for (char of text.split('')) {
+			if (char === '\"') { dialog = !dialog }
+			if (char === ' ') {
+				if (!dialog &&
+					shapesOfYou.includes(text.substring(wordIndex, index).toLowerCase().replace(extPuncRegex, ""))) containsYou = true
+				wordIndex = index
+			}
+			if (char.match(puncRegex)) {
+				if (!containsYou) modifiedText += text.substring(sentenceIndex + 1, index + 1)
+				containsYou = false
+				sentenceIndex = index
+			}
+			index++
+		}
+		if (text.substring(sentenceIndex, index).match(extPuncRegex)) {
+			modifiedText += text.substring(sentenceIndex + 1, index)
+		}
+	} else {
+		modifiedText = text
+	}
+
+	// You must return an object with the text property defined. 
+	return { text: modifiedText }
 }
 
 // Don't modify this part
